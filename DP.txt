@@ -1,0 +1,80 @@
+
+import random
+import string
+
+sequence=['A','C','G','T']
+def randStr(chars = string.ascii_uppercase + string.digits, N=16):
+   return ''.join(random.choice(chars) for _ in range(N))
+string_1=randStr(chars='ATGC')
+string_2=""
+print(string_1)
+string_2=''.join(random.sample(string_1,len(string_1)))
+print(string_2)
+match_score=5
+mismatch_score=-4
+l1=len(string_1)
+l2=len(string_2)
+
+
+import numpy as np
+def nw(x, y, match = 5, mismatch = -4, gap = 1):
+    nx = len(x)
+    ny = len(y)
+    F = np.zeros((nx + 1, ny + 1))
+    F[:,0] = np.linspace(0, -nx * gap, nx + 1)
+    F[0,:] = np.linspace(0, -ny * gap, ny + 1)
+    P = np.zeros((nx + 1, ny + 1))
+    P[:,0] = 3
+    P[0,:] = 4
+    t = np.zeros(3)
+    for i in range(nx):
+        for j in range(ny):
+            if x[i] == y[j]:
+                t[0] = F[i,j] + match
+            else:
+                t[0] = F[i,j] - mismatch
+            t[1] = F[i,j+1] - gap
+            t[2] = F[i+1,j] - gap
+            tmax = np.max(t)
+            F[i+1,j+1] = tmax
+            if t[0] == tmax:
+                P[i+1,j+1] += 2
+            if t[1] == tmax:
+                P[i+1,j+1] += 3
+            if t[2] == tmax:
+                P[i+1,j+1] += 4
+    i = nx
+    j = ny
+    rx = []
+    ry = []
+    while i > 0 or j > 0:
+        if P[i,j] in [2, 5, 6, 9]:
+            rx.append(x[i-1])
+            ry.append(y[j-1])
+            i -= 1
+            j -= 1
+        elif P[i,j] in [3, 5, 7, 9]:
+            rx.append(x[i-1])
+            ry.append('-')
+            i -= 1
+        elif P[i,j] in [4, 6, 7, 9]:
+            rx.append('-')
+            ry.append(y[j-1])
+            j -= 1
+   
+    rx = ''.join(rx)[::-1]
+    ry = ''.join(ry)[::-1]
+    return '\n'.join([rx, ry])
+
+s1 = "ACGT"
+s2 = "ACGT"
+print(nw(s1, s2))
+
+
+np.random.seed(42)
+s1 = np.random.choice(['A', 'C', 'G', 'T'], 50)
+s2 = np.random.choice(['A', 'C', 'G', 'T'], 50)
+
+print(nw(s1, s2, gap = 0))
+print(nw(s1, s2, gap = 1))
+print(nw(s1, s2, gap = 2))
